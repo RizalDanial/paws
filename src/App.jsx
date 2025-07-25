@@ -29,6 +29,7 @@ const App = () => {
   }, []);
 
   const handleSwipe = (direction, cat) => {
+    console.log('here');
     if (direction === 'right') {
       setLikedCats(prev => [...prev, cat]);
     } else if (direction === 'left') {
