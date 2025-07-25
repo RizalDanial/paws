@@ -1,28 +1,31 @@
-import react from 'react';
+import React from 'react';
 import TinderCard from 'react-tinder-card';
 import './CatCard.css';
 
 const CatCard = ({ cat, onSwipe, style }) => {
   return (
     <div className='wrapper'>
-    <TinderCard
-      className="w-full h-full "
-      onSwipe={(dir) => onSwipe(dir, cat)}
-      preventSwipe={['up', 'down']}
-      swipeThreshold={50}       // easier to swipe
-      animationDuration={300}   // faster swipe animation
-    >
-      <div
-        className="w-full h-full bg-white rounded-2xl shadow-lg overflow-hidden flex items-center justify-center"
-        style={style}  // <- apply style here, NOT on TinderCard
+      <TinderCard
+        className="swipe-card"
+        onSwipe={(dir) => onSwipe(dir, cat)}
+        preventSwipe={['up', 'down']}
+        swipeThreshold={50}
+        animationDuration={300}
       >
-        <img
-          src={cat.url}
-          alt="Cute cat"
-          className="w-full h-full object-cover"
-        />
-      </div>
-    </TinderCard>
+        <div
+          className="cat-card"
+          style={style}
+        >
+          <img
+            src={cat.url}
+            alt="Cute cat"
+            className="cat-image"
+            onError={(e) => {
+              e.target.src = `https://cataas.com/cat?${cat.id || Math.random()}&width=400&height=600`;
+            }}
+          />
+        </div>
+      </TinderCard>
     </div>
   );
 };
