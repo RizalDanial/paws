@@ -10,15 +10,41 @@ const App = () => {
   const [dislikedCats, setDislikedCats] = useState([]);
   const [showSummary, setShowSummary] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [screenSize, setScreenSize] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight
+  });
+
+  // Handle screen resize
+  useEffect(() => {
+    const handleResize = () => {
+      setScreenSize({
+        width: window.innerWidth,
+        height: window.innerHeight
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+    };
+  }, []);
 
   // Generate cat data
   useEffect(() => {
     const generateCats = () => {
       const catList = [];
       for (let i = 0; i < 15; i++) {
+        // Use different image sizes based on screen size for better performance
+        const imageWidth = screenSize.width > 768 ? 500 : 400;
+        const imageHeight = screenSize.width > 768 ? 750 : 600;
+        
         catList.push({
           id: i,
-          url: `https://cataas.com/cat?${i}&width=400&height=600`,
+          url: `https://cataas.com/cat?${i}&width=${imageWidth}&height=${imageHeight}`,
         });
       }
       setCats(catList);
@@ -26,10 +52,10 @@ const App = () => {
     };
 
     generateCats();
-  }, []);
+  }, [screenSize.width]);
 
   const handleSwipe = (direction, cat) => {
-    console.log('here');
+    console.log('Swiped:', direction, cat.id);
     if (direction === 'right') {
       setLikedCats(prev => [...prev, cat]);
     } else if (direction === 'left') {
@@ -120,6 +146,7 @@ const App = () => {
                 src={cat.url}
                 alt="Upcoming cat"
                 className="background-image"
+                loading="lazy"
               />
             </div>
           ))}
@@ -143,6 +170,7 @@ const App = () => {
             className="action-button dislike-button"
             onClick={() => handleButtonSwipe('left')}
             disabled={!cats[currentIndex]}
+            aria-label="Pass on this cat"
           >
             <span className="button-icon">👎</span>
             <span className="button-text">Pass</span>
@@ -152,6 +180,7 @@ const App = () => {
             className="action-button like-button"
             onClick={() => handleButtonSwipe('right')}
             disabled={!cats[currentIndex]}
+            aria-label="Like this cat"
           >
             <span className="button-icon">❤️</span>
             <span className="button-text">Like</span>

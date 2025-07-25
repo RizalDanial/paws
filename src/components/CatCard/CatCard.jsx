@@ -14,23 +14,34 @@ const CatCard = ({ cat, onSwipe }) => {
     setImageLoaded(false);
   }, [cat.id]);
 
-  const handlePointerDown = (e) => {
-    setIsDragging(true);
-    setStartPos({ x: e.clientX, y: e.clientY });
-    e.preventDefault();
+  const getEventCoordinates = (e) => {
+    if (e.touches && e.touches.length > 0) {
+      return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }
+    return { x: e.clientX, y: e.clientY };
   };
 
-  const handlePointerMove = (e) => {
+  const handleStart = (e) => {
+    e.preventDefault();
+    const coords = getEventCoordinates(e);
+    setIsDragging(true);
+    setStartPos({ x: coords.x, y: coords.y });
+  };
+
+  const handleMove = (e) => {
     if (!isDragging) return;
+    e.preventDefault();
     
-    const deltaX = e.clientX - startPos.x;
-    const deltaY = e.clientY - startPos.y;
+    const coords = getEventCoordinates(e);
+    const deltaX = coords.x - startPos.x;
+    const deltaY = coords.y - startPos.y;
     
     setPosition({ x: deltaX, y: deltaY });
   };
 
-  const handlePointerUp = () => {
+  const handleEnd = (e) => {
     if (!isDragging) return;
+    e.preventDefault();
     
     const threshold = 120;
     
@@ -45,25 +56,30 @@ const CatCard = ({ cat, onSwipe }) => {
     setIsDragging(false);
   };
 
-  // Global event listeners
+  // Global event listeners for both mouse and touch
   useEffect(() => {
     if (isDragging) {
-      const handleGlobalMove = (e) => handlePointerMove(e);
-      const handleGlobalUp = () => handlePointerUp();
+      const handleGlobalMove = (e) => handleMove(e);
+      const handleGlobalEnd = (e) => handleEnd(e);
       
-      document.addEventListener('mousemove', handleGlobalMove);
-      document.addEventListener('mouseup', handleGlobalUp);
-      document.addEventListener('touchmove', handleGlobalMove);
-      document.addEventListener('touchend', handleGlobalUp);
+      // Mouse events
+      document.addEventListener('mousemove', handleGlobalMove, { passive: false });
+      document.addEventListener('mouseup', handleGlobalEnd, { passive: false });
+      
+      // Touch events
+      document.addEventListener('touchmove', handleGlobalMove, { passive: false });
+      document.addEventListener('touchend', handleGlobalEnd, { passive: false });
+      document.addEventListener('touchcancel', handleGlobalEnd, { passive: false });
       
       return () => {
         document.removeEventListener('mousemove', handleGlobalMove);
-        document.removeEventListener('mouseup', handleGlobalUp);
+        document.removeEventListener('mouseup', handleGlobalEnd);
         document.removeEventListener('touchmove', handleGlobalMove);
-        document.removeEventListener('touchend', handleGlobalUp);
+        document.removeEventListener('touchend', handleGlobalEnd);
+        document.removeEventListener('touchcancel', handleGlobalEnd);
       };
     }
-  }, [isDragging, startPos, position]);
+  }, [isDragging, startPos, position.x]); // Added position.x as dependency
 
   const rotation = position.x * 0.05;
   const opacity = Math.max(0.3, 1 - Math.abs(position.x) * 0.003);
@@ -76,8 +92,9 @@ const CatCard = ({ cat, onSwipe }) => {
         opacity: opacity,
         cursor: isDragging ? 'grabbing' : 'grab',
         transition: isDragging ? 'none' : 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-        touchAction: 'none',
+        touchAction: 'pan-y pinch-zoom', // Allow vertical scrolling but prevent horizontal pan
         userSelect: 'none',
+        webkitUserSelect: 'none', // Safari
         width: '100%',
         height: '100%',
         position: 'relative',
@@ -85,13 +102,8 @@ const CatCard = ({ cat, onSwipe }) => {
         overflow: 'hidden',
         background: 'white'
       }}
-      onMouseDown={handlePointerDown}
-      onTouchStart={(e) => {
-        const touch = e.touches[0];
-        setIsDragging(true);
-        setStartPos({ x: touch.clientX, y: touch.clientY });
-        e.preventDefault();
-      }}
+      onMouseDown={handleStart}
+      onTouchStart={handleStart}
     >
       {!imageLoaded && (
         <div style={{
@@ -121,7 +133,8 @@ const CatCard = ({ cat, onSwipe }) => {
           width: '100%',
           height: '100%',
           objectFit: 'cover',
-          display: imageLoaded ? 'block' : 'none'
+          display: imageLoaded ? 'block' : 'none',
+          pointerEvents: 'none' // Prevent image from interfering with touch events
         }}
         onLoad={() => setImageLoaded(true)}
         draggable={false}
@@ -145,7 +158,8 @@ const CatCard = ({ cat, onSwipe }) => {
               border: '3px solid #4CAF50',
               background: 'rgba(76, 175, 80, 0.9)',
               color: 'white',
-              opacity: position.x > 50 ? Math.min((position.x - 50) / 70, 1) : 0
+              opacity: position.x > 50 ? Math.min((position.x - 50) / 70, 1) : 0,
+              pointerEvents: 'none' // Prevent these from interfering with touch events
             }}
           >
             ❤️ LIKE
@@ -164,7 +178,8 @@ const CatCard = ({ cat, onSwipe }) => {
               border: '3px solid #f44336',
               background: 'rgba(244, 67, 54, 0.9)',
               color: 'white',
-              opacity: position.x < -50 ? Math.min((Math.abs(position.x) - 50) / 70, 1) : 0
+              opacity: position.x < -50 ? Math.min((Math.abs(position.x) - 50) / 70, 1) : 0,
+              pointerEvents: 'none' // Prevent these from interfering with touch events
             }}
           >
             👎 PASS
