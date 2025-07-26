@@ -6,6 +6,12 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
+  
+  /* Mobile scroll fixes */
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y pinch-zoom;
 }
 
 .summary-header {
@@ -98,6 +104,14 @@
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
+/* Content wrapper for better scrolling */
+.summary-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
 .liked-cats-section {
   background: white;
   border-radius: 24px;
@@ -126,6 +140,9 @@
   overflow: hidden;
   cursor: pointer;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  
+  /* Allow touch events for thumbnails */
+  touch-action: auto;
 }
 
 .cat-thumbnail:hover {
@@ -138,6 +155,15 @@
   height: 100%;
   object-fit: cover;
   transition: transform 0.3s ease;
+  
+  /* Prevent image dragging from interfering with scroll */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
 }
 
 .cat-thumbnail:hover .thumbnail-image {
@@ -197,6 +223,12 @@
   margin: 0;
 }
 
+/* Footer wrapper for the restart button */
+.summary-footer {
+  margin-top: auto;
+  padding-top: 20px;
+}
+
 .restart-button {
   background: linear-gradient(135deg, #ec4899, #8b5cf6);
   color: white;
@@ -212,7 +244,12 @@
   gap: 8px;
   transition: all 0.3s ease;
   box-shadow: 0 8px 20px rgba(236, 72, 153, 0.3);
-  margin-top: auto;
+  width: 100%;
+  
+  /* Ensure button is always clickable */
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
 }
 
 .restart-button:hover {
@@ -233,6 +270,10 @@
   .summary-container {
     padding: 16px;
     gap: 20px;
+    
+    /* Mobile viewport fixes */
+    min-height: 100vh;
+    min-height: 100dvh; /* Dynamic viewport height for mobile browsers */
   }
   
   .summary-header {
@@ -261,5 +302,13 @@
   .restart-button {
     padding: 16px 28px;
     font-size: 16px;
+    min-height: 48px; /* Ensure good touch target size */
+  }
+}
+
+/* Fix for iOS Safari bottom bar issue */
+@supports (-webkit-touch-callout: none) {
+  .summary-container {
+    min-height: -webkit-fill-available;
   }
 }

@@ -33,6 +33,20 @@ const App = () => {
     };
   }, []);
 
+  // Manage body class for scroll control
+  useEffect(() => {
+    if (showSummary || loading) {
+      document.body.classList.remove('swiping-mode');
+    } else {
+      document.body.classList.add('swiping-mode');
+    }
+
+    // Cleanup on unmount
+    return () => {
+      document.body.classList.remove('swiping-mode');
+    };
+  }, [showSummary, loading]);
+
   // Generate cat data
   useEffect(() => {
     const generateCats = () => {
@@ -78,6 +92,7 @@ const App = () => {
   };
 
   const handleRestart = () => {
+    console.log('Restarting app...'); // Debug log
     setCurrentIndex(0);
     setLikedCats([]);
     setDislikedCats([]);
@@ -100,7 +115,7 @@ const App = () => {
 
   if (showSummary) {
     return (
-      <div className="app">
+      <div className="app summary-mode">
         <Summary 
           likedCats={likedCats}
           dislikedCats={dislikedCats}
@@ -111,7 +126,7 @@ const App = () => {
   }
 
   return (
-    <div className="app">
+    <div className="app swiping-mode">
       {/* Header */}
       <div className="header">
         <h1 className="app-title">Paws & Preferences 🐾</h1>
